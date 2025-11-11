@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "jsx": "preserve",
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["ESNext", "DOM"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["app/webroot/js/*"]
+    },
+    "skipLibCheck": true,
+    "types": ["google.maps"],
+    "outDir": "app/webroot/dist"
+  },
+  "include": ["app/webroot/js/**/*.ts", "app/src/Vue/**/*.vue", "app/src/Vue/**/*.d.ts"],
+  "exclude": ["node_modules", "app/webroot/dist"],
+}
