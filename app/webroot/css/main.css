@@ -1,0 +1,38 @@
+:root {
+    --default-padding: 50px;
+}
+
+/** 
+ * Remove some of cake's default max-widths which as per our test
+ * "should take up most/all of the page" 
+ */
+.container {
+    max-width: calc(100% - var(--default-padding));
+}
+
+/**
+ * Some height changes to allow our map to take up most of the screen
+ */
+html,
+body,
+main,
+.container {
+    height: 100%;
+}
+
+/**
+ * Since we removed the navigation bar and set the height to 100%,
+ * we need some padding so the page has a little breathing room
+ */
+.container {
+    padding-top: var(--default-padding);
+    padding-bottom: var(--default-padding);
+}
+/**
+ * And we also need our root component for the map to now fit into
+ * the updated container
+ */
+ #vue-map-app {
+    position: relative;
+    height: 100%;
+ }

@@ -4,8 +4,4 @@
  */
 ?>
 
-<h1>
-    Map
-</h1>
-
 <div id="vue-map-app"></div>
