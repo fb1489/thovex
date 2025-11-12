@@ -9,14 +9,22 @@
   import Map from '../Lib/map';
 
   const mapElement = ref<HTMLElement>();
+  const markers = ref<Array<google.maps.marker.AdvancedMarkerElement>>([]);
 
   const map = new Map();
+  
+  function handleMapClick(event: google.maps.MapMouseEvent) {
+    let newMarker = map.addMarkerTo(event.latLng!);
+    markers.value.push(newMarker);
+  }
 
-  onMounted(() => {
-    map.init(
+  onMounted(async () => {
+    await map.init(
       mapElement.value!,
       new google.maps.LatLng(51.520128225389065, -3.200732454703261)
     );
+
+    map.addClickEventListener(handleMapClick);
   });
 </script>
 
