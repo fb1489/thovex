@@ -2,7 +2,6 @@
 
 namespace App\Test\Controller;
 
-use App\Maps\MapMarker;
 use App\Maps\SaveMapMarker;
 use App\Maps\SaveMapMarkerHandler;
 use App\Model\Entity\MapMarker as MapMarkerEntity;

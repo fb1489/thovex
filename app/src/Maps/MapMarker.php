@@ -2,7 +2,8 @@
 
 namespace App\Maps;
 
-class MapMarker {
+class MapMarker implements \JsonSerializable
+{
     public function __construct(
         private float $latitude,
         private float $longitude,
@@ -28,5 +29,13 @@ class MapMarker {
     public function longitude(): float
     {
         return $this->longitude;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'latitude' => $this->latitude(),
+            'longitude' => $this->longitude(),
+        ];
     }
 }

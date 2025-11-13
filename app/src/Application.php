@@ -104,5 +104,6 @@ class Application extends BaseApplication
     public function services(ContainerInterface $container): void
     {
         $container->add(SaveMapMarkerHandler::class)->addArgument(new Repository());
+        $container->add(Repository::class);
     }
 }

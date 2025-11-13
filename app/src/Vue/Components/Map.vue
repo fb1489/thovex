@@ -8,6 +8,14 @@
   import { ref, onMounted } from 'vue';
   import Map from '../Lib/map';
   import axios from '../Lib/axios';
+  import MapMarker from '../Lib/MapMarker';
+
+  const props = defineProps({
+    mapMarkers: {
+      type: Array<MapMarker>,
+      required: true,
+    },
+  });
 
   const mapElement = ref<HTMLElement>();
   const markers = ref<Array<google.maps.marker.AdvancedMarkerElement>>([]);
@@ -30,12 +38,22 @@
       })
   }
 
+  function createInitialMapMarkers() {
+    for (let mapMarker of props.mapMarkers) {
+      map.addMarkerTo(new google.maps.LatLng(
+        mapMarker.latitude,
+        mapMarker.longitude
+      ));
+    }
+  }
+
   onMounted(async () => {
     await map.init(
       mapElement.value!,
       new google.maps.LatLng(51.520128225389065, -3.200732454703261)
     );
 
+    createInitialMapMarkers();
     map.addClickEventListener(handleMapClick);
   });
 </script>
