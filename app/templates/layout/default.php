@@ -22,6 +22,7 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
 <head>
     <?= $this->Html->charset() ?>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="<?= h($this->request->getAttribute('csrfToken')) ?>">
     <title>
         <?= $cakeDescription ?>:
         <?= $this->fetch('title') ?>

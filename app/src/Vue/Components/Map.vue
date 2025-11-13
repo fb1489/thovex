@@ -7,6 +7,7 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue';
   import Map from '../Lib/map';
+  import axios from '../Lib/axios';
 
   const mapElement = ref<HTMLElement>();
   const markers = ref<Array<google.maps.marker.AdvancedMarkerElement>>([]);
@@ -16,6 +17,17 @@
   function handleMapClick(event: google.maps.MapMouseEvent) {
     let newMarker = map.addMarkerTo(event.latLng!);
     markers.value.push(newMarker);
+    
+    axios.post('maps/save_marker', {
+      latitude: newMarker.position!.lat,
+      longitude: newMarker.position!.lng,
+    })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        // todo error handling
+      })
   }
 
   onMounted(async () => {
