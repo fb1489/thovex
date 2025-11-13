@@ -9,6 +9,13 @@ class SaveMapMarkerHandler {
 
     public function handle(SaveMapMarker $command): void
     {
+        if ($this->repository->getMapMarkerWithCoordinates(
+            $command->mapMarker()->latitude(),
+            $command->mapMarker()->longitude()
+        ) !== null) {
+            return;
+        }
+
         $this->repository->saveMarker($command->mapMarker());
     }
 }

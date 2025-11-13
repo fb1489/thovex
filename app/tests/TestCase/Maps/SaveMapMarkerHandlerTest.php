@@ -7,6 +7,7 @@ use App\Maps\SaveMapMarker;
 use App\Maps\SaveMapMarkerHandler;
 use App\Maps\Repository;
 use Cake\ORM\TableRegistry;
+use Cake\Database\Expression\FunctionExpression;
 use Cake\TestSuite\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -32,6 +33,35 @@ class SaveMapMarkerHandlerTest extends TestCase
             ->first();
 
         $this->assertNotNull($mapMarker, "Map marker was not created on the database");
+    }
+
+    #[Test]
+    public function it_does_not_create_a_duplicate_entry_on_the_database_if_a_marker_already_existed_on_the_same_coordinates(): void
+    {
+        $latitude = 51.520128225389065;
+        $longitude = -3.200732454703261;
+        
+        $this->saveMapMarkerWithCoordinates($latitude, $longitude);
+
+        $this->createHandler()->handle(new SaveMapMarker(
+            new MapMarker($latitude, $longitude)
+        ));
+
+        $numberOfSavedMapMarkers = TableRegistry::getTableLocator()
+            ->get('MapMarkers')
+            ->find()
+            ->all()
+            ->count();
+
+        $this->assertEquals(1, $numberOfSavedMapMarkers, "A duplicate map marker was created on the database");
+    }
+
+    private function saveMapMarkerWithCoordinates(float $latitude, float $longitude): void
+    {
+        $markersTable = TableRegistry::getTableLocator()->get('MapMarkers');
+        $emptyMapMarker = $markersTable->newEmptyEntity();
+        $emptyMapMarker->coordinates = new FunctionExpression('POINT', [$latitude, $longitude]);
+        $markersTable->save($emptyMapMarker);
     }
 
     private function createHandler(): SaveMapMarkerHandler

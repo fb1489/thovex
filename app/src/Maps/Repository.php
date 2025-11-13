@@ -55,4 +55,28 @@ class Repository
     {
         $this->mapMarkers->deleteAll([]);
     }
+
+    public function getMapMarkerWithCoordinates(float $latitude, float $longitude): ?MapMarker
+    {
+        $mapMarkerEntity = $this->mapMarkers
+            ->find()
+            ->select([
+                'latitude' => new FunctionExpression('ST_X', [new IdentifierExpression('coordinates')]),
+                'longitude' => new FunctionExpression('ST_Y', [new IdentifierExpression('coordinates')]),
+            ])
+            ->where([
+                'st_X(coordinates)' => $latitude,
+                'st_Y(coordinates)' => $longitude,
+            ])
+            ->first();
+
+        if ($mapMarkerEntity === null) {
+            return null;
+        }
+
+        return new MapMarker(
+            $mapMarkerEntity->latitude,
+            $mapMarkerEntity->longitude,
+        );
+    }
 }

@@ -94,6 +94,19 @@ export default class Map {
     
     private createMapMarkerOnMapClick = (event: google.maps.MapMouseEvent): void => {
         if (event.latLng) {
+
+            let markerWithSameCoordinates = this.mapMarkers.find(
+                (mapMarker: google.maps.marker.AdvancedMarkerElement) => {
+                    return mapMarker.position!.lat === event.latLng?.lat()
+                        && mapMarker.position!.lng === event.latLng?.lng();
+                }
+            );
+
+            // we don't want to add duplicate markers
+            if (markerWithSameCoordinates) {
+                return;
+            }
+
             let newMarker = this.addMarkerOn(event.latLng);
             
             axios.post('maps/save_marker', {

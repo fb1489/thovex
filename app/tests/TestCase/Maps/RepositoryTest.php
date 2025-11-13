@@ -96,6 +96,74 @@ class RepositoryTest extends TestCase
         $mapMarkers = TableRegistry::getTableLocator()->get('MapMarkers')->find()->all()->toArray();
         $this->assertEmpty($mapMarkers);
     }
+    
+    #[Test]
+    public function it_returns_a_marker_with_the_given_latitude_and_longitude(): void
+    {
+        $latitude = 51.520128;
+        $longitude = -3.200732;
+
+        $aDifferentLatitude = 12.346722;
+        $aDifferentLongitude = 42.456789;
+
+        $anotherDifferentLatitude = -32.085632;
+        $anotherDifferentLongitude = -67.345778;
+
+        $this->saveMapMarkerWithCoordinates($latitude, $longitude);
+        $this->saveMapMarkerWithCoordinates($aDifferentLatitude, $aDifferentLongitude);
+        $this->saveMapMarkerWithCoordinates($anotherDifferentLatitude, $anotherDifferentLongitude);
+
+        $marker = $this->repository()->getMapMarkerWithCoordinates($latitude, $longitude);
+
+        $this->assertNotNull($marker, "Did not find the marker on the database");
+        $this->assertEquals($latitude, $marker->latitude(), "Did not find the marker matching the latitude");
+        $this->assertEquals($longitude, $marker->longitude(), "Did not find the marker matching the longitude");
+    }
+    
+    #[Test]
+    public function it_returns_null_when_no_markers_match_the_given_latitude_and_longitude(): void
+    {
+        $latitude = 51.520128;
+        $longitude = -3.200732;
+
+        $aDifferentLatitude = 12.346722;
+        $aDifferentLongitude = 42.456789;
+
+        $anotherDifferentLatitude = -32.085632;
+        $anotherDifferentLongitude = -67.345778;
+
+        $this->saveMapMarkerWithCoordinates($aDifferentLatitude, $aDifferentLongitude);
+        $this->saveMapMarkerWithCoordinates($anotherDifferentLatitude, $anotherDifferentLongitude);
+
+        $marker = $this->repository()->getMapMarkerWithCoordinates($latitude, $longitude);
+        $this->assertNull($marker, "Incorrectly matched a marker on the database");
+    }
+    
+    #[Test]
+    public function it_does_not_return_a_marker_when_the_latitude_matches_but_the_longitude_does_not(): void
+    {
+        $latitude = 51.520128;
+        $longitude = -3.200732;
+        $aDifferentLongitude = 42.456789;
+
+        $this->saveMapMarkerWithCoordinates($latitude, $aDifferentLongitude);
+
+        $marker = $this->repository()->getMapMarkerWithCoordinates($latitude, $longitude);
+        $this->assertNull($marker, "Incorrectly matched a partial match marker on the database");
+    }
+    
+    #[Test]
+    public function it_does_not_return_a_marker_when_the_longitude_matches_but_the_latitude_does_not(): void
+    {
+        $latitude = 51.520128;
+        $longitude = -3.200732;
+        $aDifferentLatitude = 42.456789;
+
+        $this->saveMapMarkerWithCoordinates($aDifferentLatitude, $longitude);
+
+        $marker = $this->repository()->getMapMarkerWithCoordinates($latitude, $longitude);
+        $this->assertNull($marker, "Incorrectly matched a partial match marker on the database");
+    }
 
     private function saveMapMarkerWithCoordinates(float $latitude, float $longitude): void
     {
