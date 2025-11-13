@@ -1,5 +1,10 @@
+import axios from '../Lib/axios';
+import MapMarker from '../Lib/MapMarker';
+
 export default class Map {
     private map!: google.maps.Map;
+    private addMapMarkerListener: google.maps.MapsEventListener|null = null;
+    private mapMarkers: Array<google.maps.marker.AdvancedMarkerElement> = [];
 
     async init(
         GmpMapElement: HTMLElement,
@@ -16,18 +21,66 @@ export default class Map {
         });
     }
 
-    addClickEventListener(callable: (e: google.maps.MapMouseEvent) => void): google.maps.MapsEventListener {
-        return google.maps.event.addListener(this.map, 'click', callable);
+    isAddingMapMarkerOnMapClickEnabled(): boolean {
+        return this.addMapMarkerListener !== null;
     }
 
-    removeClickEventListener(listener: google.maps.MapsEventListener): void {
-        google.maps.event.removeListener(listener);
+    addMapMarkerOnMapClickToggle(): boolean {
+        if (this.isAddingMapMarkerOnMapClickEnabled()) {
+            this.disableAddingMapMarkerOnMapClick();
+        } else {
+            this.enableAddingMapMarkerOnMapClick();
+        }
+
+        return this.isAddingMapMarkerOnMapClickEnabled();
     }
 
-    addMarkerTo(latLng: google.maps.LatLng): google.maps.marker.AdvancedMarkerElement {
-        return new google.maps.marker.AdvancedMarkerElement({
+    enableAddingMapMarkerOnMapClick(): void {
+        if (this.addMapMarkerListener === null) {
+            this.addMapMarkerListener = google.maps.event.addListener(this.map, 'click', this.createMapMarkerOnMapClick);
+        }
+    }
+
+    disableAddingMapMarkerOnMapClick(): void {
+        if (this.addMapMarkerListener) {
+            google.maps.event.removeListener(this.addMapMarkerListener);
+            this.addMapMarkerListener = null;
+        }
+    }
+
+    createMapMarkers(mapMarkers: Array<MapMarker>): void {
+        for (let mapMarker of mapMarkers) {
+            this.addMarkerOn(new google.maps.LatLng(
+                mapMarker.latitude,
+                mapMarker.longitude
+            ));
+        }
+    }
+
+    private addMarkerOn = (latLng: google.maps.LatLng): google.maps.marker.AdvancedMarkerElement => {
+        let marker = new google.maps.marker.AdvancedMarkerElement({
             map: this.map,
             position: latLng,
         });
+        
+        this.mapMarkers.push(marker);
+        return marker;
     }
+    
+    private createMapMarkerOnMapClick = (event: google.maps.MapMouseEvent): void => {
+        if (event.latLng) {
+            let newMarker = this.addMarkerOn(event.latLng);
+            
+            axios.post('maps/save_marker', {
+                latitude: newMarker.position!.lat,
+                longitude: newMarker.position!.lng,
+            })
+            .then((response) => {
+                // noop
+            })
+            .catch((error) => {
+                // todo error handling
+            });
+        }
+  }
 }

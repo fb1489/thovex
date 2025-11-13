@@ -1,8 +1,8 @@
 <template>
   <div id="map-container">
     <div id="map-controls">
-      <button @click="allowMarkerCreationToggle">
-        {{ allowMarkerCreation ? 'Disable' : 'Enable' }} Map Markers
+      <button @click="addMapMarkerOnMapClickToggle">
+        {{ isAddingMapMarkerOnMapClickEnabled ? 'Disable' : 'Enable' }} Map Markers
       </button>
     </div>
     <div id="map" ref="mapElement"></div>
@@ -10,9 +10,8 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue';
+  import { ref, computed, onMounted } from 'vue';
   import Map from '../Lib/map';
-  import axios from '../Lib/axios';
   import MapMarker from '../Lib/MapMarker';
 
   const props = defineProps({
@@ -23,48 +22,12 @@
   });
 
   const mapElement = ref<HTMLElement>();
-  const markers = ref<Array<google.maps.marker.AdvancedMarkerElement>>([]);
-  const allowMarkerCreation = ref<boolean>(false);
+  const isAddingMapMarkerOnMapClickEnabled = ref<boolean>(false);
 
   const map = new Map();
-  let clickEventListener: google.maps.MapsEventListener|null = null;
-  
-  function handleMapClick(event: google.maps.MapMouseEvent) {
-    let newMarker = map.addMarkerTo(event.latLng!);
-    markers.value.push(newMarker);
-    
-    axios.post('maps/save_marker', {
-      latitude: newMarker.position!.lat,
-      longitude: newMarker.position!.lng,
-    })
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((error) => {
-        // todo error handling
-      })
-  }
 
-  function createInitialMapMarkers() {
-    for (let mapMarker of props.mapMarkers) {
-      map.addMarkerTo(new google.maps.LatLng(
-        mapMarker.latitude,
-        mapMarker.longitude
-      ));
-    }
-  }
-
-  function allowMarkerCreationToggle() {
-    allowMarkerCreation.value = !allowMarkerCreation.value;
-
-    if (allowMarkerCreation.value) {
-      if (clickEventListener === null) {
-        clickEventListener = map.addClickEventListener(handleMapClick);
-      }
-    } else if (clickEventListener) {
-      map.removeClickEventListener(clickEventListener);
-      clickEventListener = null;
-    }
+  function addMapMarkerOnMapClickToggle() {
+    isAddingMapMarkerOnMapClickEnabled.value = map.addMapMarkerOnMapClickToggle();
   }
 
   onMounted(async () => {
@@ -73,7 +36,7 @@
       new google.maps.LatLng(51.520128225389065, -3.200732454703261)
     );
 
-    createInitialMapMarkers();
+    map.createMapMarkers(props.mapMarkers);
   });
 </script>
 
@@ -100,5 +63,6 @@
 }
 #map-controls button {
   margin: 0;
+  min-width: 220px;
 }
 </style>
