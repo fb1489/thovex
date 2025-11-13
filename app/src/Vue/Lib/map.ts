@@ -16,8 +16,12 @@ export default class Map {
         });
     }
 
-    addClickEventListener(callable: (e: google.maps.MapMouseEvent) => void) {
-        google.maps.event.addListener(this.map, 'click', callable);    
+    addClickEventListener(callable: (e: google.maps.MapMouseEvent) => void): google.maps.MapsEventListener {
+        return google.maps.event.addListener(this.map, 'click', callable);
+    }
+
+    removeClickEventListener(listener: google.maps.MapsEventListener): void {
+        google.maps.event.removeListener(listener);
     }
 
     addMarkerTo(latLng: google.maps.LatLng): google.maps.marker.AdvancedMarkerElement {
