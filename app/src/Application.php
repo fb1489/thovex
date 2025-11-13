@@ -18,6 +18,7 @@ namespace App;
 
 use App\Maps\Repository;
 use App\Maps\SaveMapMarkerHandler;
+use App\Maps\SaveMapMarkerRequestValidator;
 use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Datasource\FactoryLocator;
@@ -105,5 +106,6 @@ class Application extends BaseApplication
     {
         $container->add(SaveMapMarkerHandler::class)->addArgument(new Repository());
         $container->add(Repository::class);
+        $container->add(SaveMapMarkerRequestValidator::class);
     }
 }
