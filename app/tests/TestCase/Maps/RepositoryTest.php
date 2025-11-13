@@ -65,6 +65,37 @@ class RepositoryTest extends TestCase
         $this->assertNotEmpty($mapMarkerList->items(), "List of map markers is empty");
         $this->assertEquals($savedMarkers, $mapMarkerList->items(), "The list of returned map markers does not match all saved map markers");
     }
+    
+    #[Test]
+    public function it_removes_all_saved_map_markers(): void
+    {
+        $savedMarkers = [
+            new MapMarker(51.520128, -3.200732),
+            new MapMarker(13.740562, -15.205764),
+            new MapMarker(83.374512, -120.102345),
+            new MapMarker(-10.183456, -12.104532),
+            new MapMarker(-20.100234, 12.124523),
+            new MapMarker(-15.038495, 12.093845),
+        ];
+        
+        foreach ($savedMarkers as $savedMarker) {
+            $this->saveMapMarkerWithCoordinates($savedMarker->latitude(), $savedMarker->longitude());
+        }
+
+        $this->repository()->removeAllSavedMarkers();
+
+        $mapMarkers = TableRegistry::getTableLocator()->get('MapMarkers')->find()->all()->toArray();
+        $this->assertEmpty($mapMarkers, "Did not delete the map markers");
+    }
+    
+    #[Test]
+    public function it_noops_if_there_are_no_map_markers_to_remove(): void
+    {
+        $this->repository()->removeAllSavedMarkers();
+
+        $mapMarkers = TableRegistry::getTableLocator()->get('MapMarkers')->find()->all()->toArray();
+        $this->assertEmpty($mapMarkers);
+    }
 
     private function saveMapMarkerWithCoordinates(float $latitude, float $longitude): void
     {

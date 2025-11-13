@@ -47,4 +47,18 @@ class MapsController extends AppController
                 'success' => true,
             ]));
     }
+
+    public function removeAllMarkers(Repository $repository): Response
+    {
+        $this->request->allowMethod('delete');
+
+        $repository->removeAllSavedMarkers();
+        
+        return $this->response
+            ->withStatus(200)
+            ->withType('json')
+            ->withStringBody(json_encode([
+                'success' => true,
+            ]));
+    }
 }

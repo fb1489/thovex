@@ -4,13 +4,16 @@
       <button @click="addMapMarkerOnMapClickToggle">
         {{ isAddingMapMarkerOnMapClickEnabled ? 'Disable' : 'Enable' }} Map Markers
       </button>
+      <button v-if="hasMarkers" @click="removeAllMapMarkers">
+        Remove All Map Markers
+      </button>
     </div>
     <div id="map" ref="mapElement"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue';
+  import { ref, onMounted } from 'vue';
   import Map from '../Lib/map';
   import MapMarker from '../Lib/MapMarker';
 
@@ -23,11 +26,19 @@
 
   const mapElement = ref<HTMLElement>();
   const isAddingMapMarkerOnMapClickEnabled = ref<boolean>(false);
+  const hasMarkers = ref<boolean>(props.mapMarkers.length > 0);
 
   const map = new Map();
 
   function addMapMarkerOnMapClickToggle() {
     isAddingMapMarkerOnMapClickEnabled.value = map.addMapMarkerOnMapClickToggle();
+  }
+
+  function removeAllMapMarkers() {
+    if (confirm("Are you sure you want to remove all markers? This action is irreversible.")) {
+      map.removeAllMapMarkers();
+      hasMarkers.value = false;
+    }
   }
 
   onMounted(async () => {
@@ -37,6 +48,7 @@
     );
 
     map.createMapMarkers(props.mapMarkers);
+    map.addListenerForMapMarker(() => {hasMarkers.value = true});
   });
 </script>
 
@@ -60,6 +72,7 @@
 
   display: flex;
   align-items: flex-start;
+  gap: 20px
 }
 #map-controls button {
   margin: 0;

@@ -50,4 +50,9 @@ class Repository
 
         return new MapMarkerList($mapMarkers);
     }
+
+    public function removeAllSavedMarkers(): void
+    {
+        $this->mapMarkers->deleteAll([]);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Test\Controller;
 
+use App\Maps\MapMarker;
 use App\Maps\SaveMapMarker;
 use App\Maps\SaveMapMarkerHandler;
 use App\Model\Entity\MapMarker as MapMarkerEntity;
@@ -178,6 +179,42 @@ class MapsControllerTest extends TestCase
             "A json object value" => ['{"value": 1.23}'],
             "An malformed numeric value" => ['12.12.12'],
         ];
+    }
+    
+    /**
+     * @covers ::removeAllMarkers
+     */
+    #[Test]
+    public function it_removes_all_saved_map_markers(): void
+    {
+        $this->enableCsrfToken();
+
+        $savedMarkers = [
+            new MapMarker(51.520128, -3.200732),
+            new MapMarker(13.740562, -15.205764),
+            new MapMarker(83.374512, -120.102345),
+            new MapMarker(-10.183456, -12.104532),
+            new MapMarker(-20.100234, 12.124523),
+            new MapMarker(-15.038495, 12.093845),
+        ];
+        
+        foreach ($savedMarkers as $savedMarker) {
+            $this->saveMapMarkerWithCoordinates($savedMarker->latitude(), $savedMarker->longitude());
+        }
+
+        $this->delete('/maps/remove_all_markers');
+        $this->assertResponseCode(200);
+
+        $mapMarkers = TableRegistry::getTableLocator()->get('MapMarkers')->find()->all()->toArray();
+        $this->assertEmpty($mapMarkers, "Did not delete the map markers");
+    }
+
+    private function saveMapMarkerWithCoordinates(float $latitude, float $longitude): void
+    {
+        $markersTable = TableRegistry::getTableLocator()->get('MapMarkers');
+        $mapMarker = $markersTable->newEmptyEntity();
+        $mapMarker->coordinates = new FunctionExpression('POINT', [$latitude, $longitude]);
+        $markersTable->save($mapMarker);
     }
 
     private function getLastInsertedMarker(): ?MapMarkerEntity

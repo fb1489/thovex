@@ -5,6 +5,7 @@ export default class Map {
     private map!: google.maps.Map;
     private addMapMarkerListener: google.maps.MapsEventListener|null = null;
     private mapMarkers: Array<google.maps.marker.AdvancedMarkerElement> = [];
+    private mapMarkerListeners: Array<CallableFunction> = [];
 
     async init(
         GmpMapElement: HTMLElement,
@@ -57,6 +58,25 @@ export default class Map {
         }
     }
 
+    addListenerForMapMarker(listener: CallableFunction): void {
+        this.mapMarkerListeners.push(listener);
+    }
+
+    removeAllMapMarkers(): void {
+        for (let mapMarker of this.mapMarkers) {
+            mapMarker.remove();
+        }
+        this.mapMarkers = [];
+        
+        axios.delete('maps/remove_all_markers')
+            .then((response) => {
+                // noop
+            })
+            .catch((error) => {
+                // todo error handling
+            });
+    }
+
     private addMarkerOn = (latLng: google.maps.LatLng): google.maps.marker.AdvancedMarkerElement => {
         let marker = new google.maps.marker.AdvancedMarkerElement({
             map: this.map,
@@ -64,6 +84,11 @@ export default class Map {
         });
         
         this.mapMarkers.push(marker);
+
+        for (let listener of this.mapMarkerListeners) {
+            listener(marker);
+        }
+
         return marker;
     }
     
