@@ -21,6 +21,7 @@ class Repository
     {
         $mapMarkerEntity = $this->mapMarkers->newEmptyEntity();
         $mapMarkerEntity->coordinates = new FunctionExpression('POINT', [$mapMarker->latitude(), $mapMarker->longitude()]);
+        $mapMarkerEntity->title = $mapMarker->title();
 
         $saved = $this->mapMarkers->save($mapMarkerEntity);
 
@@ -36,6 +37,7 @@ class Repository
             ->select([
                 'latitude' => new FunctionExpression('ST_X', [new IdentifierExpression('coordinates')]),
                 'longitude' => new FunctionExpression('ST_Y', [new IdentifierExpression('coordinates')]),
+                'title',
             ])
             ->all()
             ->toArray();
@@ -43,7 +45,8 @@ class Repository
         $mapMarkers = array_map(
             fn (MapMarkerEntity $dataset) => new MapMarker(
                 $dataset['latitude'],
-                $dataset['longitude']
+                $dataset['longitude'],
+                $dataset['title'],
             ),
             $data
         );
@@ -63,6 +66,7 @@ class Repository
             ->select([
                 'latitude' => new FunctionExpression('ST_X', [new IdentifierExpression('coordinates')]),
                 'longitude' => new FunctionExpression('ST_Y', [new IdentifierExpression('coordinates')]),
+                'title',
             ])
             ->where([
                 'st_X(coordinates)' => $latitude,
@@ -77,6 +81,7 @@ class Repository
         return new MapMarker(
             $mapMarkerEntity->latitude,
             $mapMarkerEntity->longitude,
+            $mapMarkerEntity->title,
         );
     }
 }

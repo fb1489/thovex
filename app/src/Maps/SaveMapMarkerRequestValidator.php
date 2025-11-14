@@ -11,6 +11,7 @@ class SaveMapMarkerRequestValidator
     public const LONGITUDE_NOT_PRESENT_ERROR = "Data key 'longitude' must be present";
     public const LATITUDE_IS_INVALID_ERROR = "Value for 'latitude' must be a valid coordinate value between -91 and 91";
     public const LONGITUDE_IS_INVALID_ERROR = "Value for 'longitude' must be a valid coordinate value between -181 and 181";
+    public const TITLE_IS_INVALID_ERROR = "Value for 'title' must be a string or NULL value";
 
     public function validate(ServerRequest $request): RequestValidationResponse
     {
@@ -44,6 +45,12 @@ class SaveMapMarkerRequestValidator
                 if ($longitude >= 181 || $longitude <= -181) {
                     $errors[] = static::LONGITUDE_IS_INVALID_ERROR;
                 }
+            }
+        }
+
+        if (array_key_exists('title', $requestData)) {
+            if (!is_string($requestData['title']) && !is_null($requestData['title'])) {
+                $errors[] = static::TITLE_IS_INVALID_ERROR;
             }
         }
 

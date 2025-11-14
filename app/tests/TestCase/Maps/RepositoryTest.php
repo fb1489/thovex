@@ -45,19 +45,61 @@ class RepositoryTest extends TestCase
     }
 
     #[Test]
+    public function it_saves_a_map_marker_with_a_null_title(): void
+    {
+        $title = null;
+        $this->repository()->saveMarker(new MapMarker(1, 2, $title));
+
+        $mapMarker = TableRegistry::getTableLocator()
+            ->get('MapMarkers')
+            ->find()
+            ->first();
+
+        $this->assertNull($mapMarker->title, "Map marker was not created with the expected NULL title");
+    }
+
+    #[Test]
+    public function it_saves_a_map_marker_with_a_title(): void
+    {
+        $title = 'This is a sample title';
+        $this->repository()->saveMarker(new MapMarker(1, 2, $title));
+
+        $mapMarker = TableRegistry::getTableLocator()
+            ->get('MapMarkers')
+            ->find()
+            ->first();
+
+        $this->assertEquals($title, $mapMarker->title, "Map marker was not created with the expected title");
+    }
+
+    #[Test]
+    public function it_sanitizes_the_title_field_when_saving_a_map_marker_with_a_title(): void
+    {
+        $title = 'TestString!@#$%^&*()_+-=[]{}|;:\'",.<>?/`~ \t \n 你好 😊 O\'Reilly \\ "DROP TABLE map_markers;" —';
+        $this->repository()->saveMarker(new MapMarker(1, 2, $title));
+
+        $mapMarker = TableRegistry::getTableLocator()
+            ->get('MapMarkers')
+            ->find()
+            ->first();
+
+        $this->assertEquals($title, $mapMarker->title, "Map marker was not created with the expected title");
+    }
+
+    #[Test]
     public function it_retrieves_all_saved_map_markers(): void
     {
         $savedMarkers = [
-            new MapMarker(51.520128, -3.200732),
-            new MapMarker(13.740562, -15.205764),
-            new MapMarker(83.374512, -120.102345),
-            new MapMarker(-10.183456, -12.104532),
-            new MapMarker(-20.100234, 12.124523),
-            new MapMarker(-15.038495, 12.093845),
+            new MapMarker(51.520128, -3.200732, 'Test Marker A'),
+            new MapMarker(13.740562, -15.205764, 'Test Marker B'),
+            new MapMarker(83.374512, -120.102345, 'Test Marker C'),
+            new MapMarker(-10.183456, -12.104532, 'Test Marker D'),
+            new MapMarker(-20.100234, 12.124523, 'Test Marker E'),
+            new MapMarker(-15.038495, 12.093845, 'Test Marker F'),
         ];
         
         foreach ($savedMarkers as $savedMarker) {
-            $this->saveMapMarkerWithCoordinates($savedMarker->latitude(), $savedMarker->longitude());
+            $this->saveMapMarkerWithCoordinates($savedMarker->latitude(), $savedMarker->longitude(), $savedMarker->title());
         }
 
         $mapMarkerList = $this->repository()->getAllSavedMarkers();
@@ -102,22 +144,26 @@ class RepositoryTest extends TestCase
     {
         $latitude = 51.520128;
         $longitude = -3.200732;
+        $title = "Matching Marker";
 
         $aDifferentLatitude = 12.346722;
         $aDifferentLongitude = 42.456789;
+        $aDifferentTitle = "Non-Matching Marker";
 
         $anotherDifferentLatitude = -32.085632;
         $anotherDifferentLongitude = -67.345778;
+        $anotherDifferentTitle = "Non-Matching Marker";
 
-        $this->saveMapMarkerWithCoordinates($latitude, $longitude);
-        $this->saveMapMarkerWithCoordinates($aDifferentLatitude, $aDifferentLongitude);
-        $this->saveMapMarkerWithCoordinates($anotherDifferentLatitude, $anotherDifferentLongitude);
+        $this->saveMapMarkerWithCoordinates($latitude, $longitude, $title);
+        $this->saveMapMarkerWithCoordinates($aDifferentLatitude, $aDifferentLongitude, $aDifferentTitle);
+        $this->saveMapMarkerWithCoordinates($anotherDifferentLatitude, $anotherDifferentLongitude, $anotherDifferentTitle);
 
         $marker = $this->repository()->getMapMarkerWithCoordinates($latitude, $longitude);
 
         $this->assertNotNull($marker, "Did not find the marker on the database");
         $this->assertEquals($latitude, $marker->latitude(), "Did not find the marker matching the latitude");
         $this->assertEquals($longitude, $marker->longitude(), "Did not find the marker matching the longitude");
+        $this->assertEquals($title, $marker->title(), "Did not return the correct title for the found marker");
     }
     
     #[Test]
@@ -165,12 +211,13 @@ class RepositoryTest extends TestCase
         $this->assertNull($marker, "Incorrectly matched a partial match marker on the database");
     }
 
-    private function saveMapMarkerWithCoordinates(float $latitude, float $longitude): void
+    private function saveMapMarkerWithCoordinates(float $latitude, float $longitude, ?String $title = null): void
     {
         $markersTable = TableRegistry::getTableLocator()->get('MapMarkers');
-        $emptyMapMarker = $markersTable->newEmptyEntity();
-        $emptyMapMarker->coordinates = new FunctionExpression('POINT', [$latitude, $longitude]);
-        $markersTable->save($emptyMapMarker);
+        $mapMarker = $markersTable->newEmptyEntity();
+        $mapMarker->coordinates = new FunctionExpression('POINT', [$latitude, $longitude]);
+        $mapMarker->title = $title;
+        $markersTable->save($mapMarker);
     }
 
     private function getLastInsertedMarker(): MapMarkerEntity

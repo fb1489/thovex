@@ -267,4 +267,70 @@ class SaveMapMarkerRequestValidatorTest extends TestCase
             "Negative coordinate at the edge of the upper bound" => [-180.999999],
         ];
     }
+
+    #[Test]
+    #[DataProvider('invalid_title_values')]
+    public function it_fails_to_validate_if_title_is_not_a_valid_value(mixed $invalidTitleValue): void
+    {
+        $request = new ServerRequest([
+            'post' => [
+                'latitude' => 12.134654,
+                'longitude' => -32.753645,
+                'title' => $invalidTitleValue,
+            ],
+        ]);
+
+        $validator = new SaveMapMarkerRequestValidator();
+        $validatorResponse = $validator->validate($request);
+
+        $this->assertFalse($validatorResponse->isValid(), "Form validator returned response as valid for non-valid data");
+
+        $expectedErrors = [
+            SaveMapMarkerRequestValidator::TITLE_IS_INVALID_ERROR,
+        ];
+        $this->assertEquals($expectedErrors, $validatorResponse->errors(), "Form validator errors do not match expected errors");
+    }
+
+    public static function invalid_title_values(): array
+    {
+        return [
+            "An integer" => [1],
+            "A float" => [1.123],
+            "An object" => [new \StdClass()],
+        ];
+    }
+
+    #[Test]
+    public function it_validates_if_title_is_not_present(): void
+    {
+        $request = new ServerRequest([
+            'post' => [
+                'latitude' => 12.134654,
+                'longitude' => -32.753645,
+                // no title
+            ],
+        ]);
+
+        $validator = new SaveMapMarkerRequestValidator();
+        $validatorResponse = $validator->validate($request);
+
+        $this->assertTrue($validatorResponse->isValid(), "Form validator returned response as non-valid for valid data");
+    }
+
+    #[Test]
+    public function it_validates_if_title_is_null(): void
+    {
+        $request = new ServerRequest([
+            'post' => [
+                'latitude' => 12.134654,
+                'longitude' => -32.753645,
+                'title' => null,
+            ],
+        ]);
+
+        $validator = new SaveMapMarkerRequestValidator();
+        $validatorResponse = $validator->validate($request);
+
+        $this->assertTrue($validatorResponse->isValid(), "Form validator returned response as non-valid for valid data");
+    }
 }

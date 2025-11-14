@@ -36,7 +36,8 @@ class MapsController extends AppController
         $saveMapMarkerHandler->handle(new SaveMapMarker(
             new MapMarker(
                 (float)$this->request->getData('latitude'),
-                (float)$this->request->getData('longitude')
+                (float)$this->request->getData('longitude'),
+                trim($this->request->getData('title', '')) ?: null,
             ),
         ));
         

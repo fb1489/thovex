@@ -10,6 +10,7 @@ use Cake\ORM\Entity;
  *
  * @property int $id
  * @property string $coordinates
+ * @property string|null $title
  */
 class MapMarker extends Entity
 {
@@ -24,5 +25,6 @@ class MapMarker extends Entity
      */
     protected array $_accessible = [
         'coordinates' => true,
+        'title' => true,
     ];
 }

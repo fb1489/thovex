@@ -88,6 +88,30 @@ class MapsControllerTest extends TestCase
      * @covers ::save_marker
      */
     #[Test]
+    public function it_saves_a_marker_in_the_database_with_the_given_title(): void
+    {
+        $this->enableCsrfToken();
+        
+        $latitude = 51.520128;
+        $longitude = -3.200732;
+        $title = "This is a marker title";
+
+        $this->post('/maps/save_marker', [
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'title' => $title,
+        ]);
+
+        $this->assertResponseCode(200);
+        
+        $mapMarker = $this->getLastInsertedMarker();
+        $this->assertEquals($title, $mapMarker['title'], "Map marker was not created on the database with the right title");
+    }
+    
+    /**
+     * @covers ::save_marker
+     */
+    #[Test]
     public function it_returns_failed_response_when_trying_to_save_a_marker_and_not_providing_latitude_and_longitude(): void
     {
         $this->enableCsrfToken();
@@ -222,7 +246,10 @@ class MapsControllerTest extends TestCase
         return TableRegistry::getTableLocator()
             ->get('MapMarkers')
             ->find()
-            ->select(['coordinates' => new FunctionExpression('ST_AsText', [new IdentifierExpression('coordinates')])])
+            ->select([
+                'coordinates' => new FunctionExpression('ST_AsText', [new IdentifierExpression('coordinates')]),
+                'title',
+            ])
             ->all()
             ->last();
     }

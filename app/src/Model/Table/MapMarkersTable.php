@@ -54,6 +54,11 @@ class MapMarkersTable extends Table
             ->requirePresence('coordinates', 'create')
             ->notEmptyString('coordinates');
 
+        $validator
+            ->scalar('title')
+            ->maxLength('title', 255)
+            ->allowEmptyString('title');
+
         return $validator;
     }
 }

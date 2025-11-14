@@ -7,6 +7,7 @@ class MapMarker implements \JsonSerializable
     public function __construct(
         private float $latitude,
         private float $longitude,
+        private ?string $title = null,
     ) {
         /**
          * Safeguards for the values, as per the documention mentions on this link:
@@ -31,11 +32,17 @@ class MapMarker implements \JsonSerializable
         return $this->longitude;
     }
 
+    public function title(): ?string
+    {
+        return $this->title;
+    }
+
     public function jsonSerialize(): array
     {
         return [
             'latitude' => $this->latitude(),
             'longitude' => $this->longitude(),
+            'title' => $this->title(),
         ];
     }
 }

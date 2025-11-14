@@ -2,7 +2,7 @@
   <div>
     <div v-for="marker in markers" class="marker">
       <div class="coordinates">
-        {{ marker.position?.lat }} {{ marker.position?.lng }}
+          {{ getMarkerDescription(marker) }}
       </div>
       <button @click="map.goTo(marker)">Go</button>
     </div>
@@ -23,6 +23,14 @@
 
   const map = props.map;
   const markers = ref<Array<google.maps.marker.AdvancedMarkerElement>>(map.getMarkers());
+
+  function getMarkerDescription(marker: google.maps.marker.AdvancedMarkerElement): string {
+    if (marker.title !== null && marker.title.trim() !== "") {
+      return marker.title.trim();
+    }
+    
+    return `${marker.position?.lat} ${marker.position?.lng }`;
+  }
 
   onMounted(() => {
     map.addListenerForMapMarker(() => {
@@ -45,6 +53,7 @@
 }
 button {
   margin: 0;
+  margin-left: auto;
   padding: 0 15px;
 }
 </style>

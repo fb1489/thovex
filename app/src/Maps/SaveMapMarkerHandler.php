@@ -11,7 +11,8 @@ class SaveMapMarkerHandler {
     {
         if ($this->repository->getMapMarkerWithCoordinates(
             $command->mapMarker()->latitude(),
-            $command->mapMarker()->longitude()
+            $command->mapMarker()->longitude(),
+            $command->mapMarker()->title(),
         ) !== null) {
             return;
         }

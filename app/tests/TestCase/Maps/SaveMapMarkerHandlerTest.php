@@ -56,6 +56,25 @@ class SaveMapMarkerHandlerTest extends TestCase
         $this->assertEquals(1, $numberOfSavedMapMarkers, "A duplicate map marker was created on the database");
     }
 
+    #[Test]
+    public function it_creates_a_MapMarker_with_a_title(): void
+    {
+        $latitude = 51.520128225389065;
+        $longitude = -3.200732454703261;
+        $title = 'This is a sample title';
+
+        $this->createHandler()->handle(new SaveMapMarker(
+            new MapMarker($latitude, $longitude, $title)
+        ));
+
+        $mapMarker = TableRegistry::getTableLocator()
+            ->get('MapMarkers')
+            ->find()
+            ->first();
+
+        $this->assertEquals($title, $mapMarker->title, "Map marker was not created on the database with the expected title");
+    }
+
     private function saveMapMarkerWithCoordinates(float $latitude, float $longitude): void
     {
         $markersTable = TableRegistry::getTableLocator()->get('MapMarkers');

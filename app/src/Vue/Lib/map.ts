@@ -1,5 +1,6 @@
 import axios from '../Lib/axios';
 import MapMarker from '../Lib/MapMarker';
+import alertify from 'alertify.js';
 
 export default class Map {
     private map!: google.maps.Map;
@@ -54,7 +55,7 @@ export default class Map {
             this.addMarkerOn(new google.maps.LatLng(
                 mapMarker.latitude,
                 mapMarker.longitude
-            ));
+            ), mapMarker.title);
         }
     }
 
@@ -88,10 +89,11 @@ export default class Map {
         ));
     }
 
-    private addMarkerOn = (latLng: google.maps.LatLng): google.maps.marker.AdvancedMarkerElement => {
+    private addMarkerOn = (latLng: google.maps.LatLng, title: string|null = null): google.maps.marker.AdvancedMarkerElement => {
         let marker = new google.maps.marker.AdvancedMarkerElement({
             map: this.map,
             position: latLng,
+            title: title,
         });
 
         this.mapMarkers.push(marker);
@@ -118,18 +120,31 @@ export default class Map {
                 return;
             }
 
-            let newMarker = this.addMarkerOn(event.latLng);
-            
-            axios.post('maps/save_marker', {
-                latitude: newMarker.position!.lat,
-                longitude: newMarker.position!.lng,
-            })
-            .then((response) => {
-                // noop
-            })
-            .catch((error) => {
-                // todo error handling
-            });
+            alertify.prompt(
+                "[Optional] Enter a title for your marker:",
+                (inputValue) => {
+                    this.createMapMarker(event.latLng!, inputValue);
+                },
+                () => {
+                    this.createMapMarker(event.latLng!);
+                },
+            );
         }
-  }
+    }
+
+    private createMapMarker = (latLng: google.maps.LatLng, title: string|null = null): void => {
+        let newMarker = this.addMarkerOn(latLng, title);
+        
+        axios.post('maps/save_marker', {
+            latitude: newMarker.position!.lat,
+            longitude: newMarker.position!.lng,
+            title: title,
+        })
+        .then((response) => {
+            // noop
+        })
+        .catch((error) => {
+            // todo error handling
+        });
+    };
 }
