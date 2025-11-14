@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
   import { ref, onMounted } from 'vue';
+  import alertify from 'alertify.js';
   import Map from '../Lib/map';
   import MapMarker from '../Lib/MapMarker';
 
@@ -35,10 +36,14 @@
   }
 
   function removeAllMapMarkers() {
-    if (confirm("Are you sure you want to remove all markers? This action is irreversible.")) {
-      map.removeAllMapMarkers();
-      hasMarkers.value = false;
-    }
+    alertify.confirm(
+      "Are you sure you want to remove all markers? This action is irreversible.",
+      (/* on accept */) => {
+        map.removeAllMapMarkers();
+        hasMarkers.value = false;
+        alertify.log('All markers were removed');
+      }
+    );
   }
 
   onMounted(async () => {
@@ -48,7 +53,10 @@
     );
 
     map.createMapMarkers(props.mapMarkers);
-    map.addListenerForMapMarker(() => {hasMarkers.value = true});
+    map.addListenerForMapMarker(() => {
+      hasMarkers.value = true;
+      alertify.log('Marker created and saved');
+    });
   });
 </script>
 
