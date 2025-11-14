@@ -7,16 +7,23 @@
       <button v-if="hasMarkers" @click="removeAllMapMarkers">
         Remove All Map Markers
       </button>
+      <button v-if="hasMarkers" @click="toggleMarkersList" class="align-right">
+        {{ showMarkersList ? 'Hide' : 'Show' }} markers list
+      </button>
     </div>
-    <div id="map" ref="mapElement"></div>
+
+    <existing-markers v-if="hasMarkers && showMarkersList" id="existing-map-markers" :map="map"></existing-markers>
+
+    <div id="map" ref="mapElement" :class="mapClasses"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue';
+  import { ref, computed, onMounted } from 'vue';
   import alertify from 'alertify.js';
   import Map from '../Lib/map';
   import MapMarker from '../Lib/MapMarker';
+  import ExistingMarkers from './ExistingMarkers.vue';
 
   const props = defineProps({
     mapMarkers: {
@@ -28,8 +35,13 @@
   const mapElement = ref<HTMLElement>();
   const isAddingMapMarkerOnMapClickEnabled = ref<boolean>(false);
   const hasMarkers = ref<boolean>(props.mapMarkers.length > 0);
+  const showMarkersList = ref<boolean>(false);
 
   const map = new Map();
+
+  const mapClasses = computed(() => {return {
+    'side-bar-open': showMarkersList.value,
+  }});
 
   function addMapMarkerOnMapClickToggle() {
     isAddingMapMarkerOnMapClickEnabled.value = map.addMapMarkerOnMapClickToggle();
@@ -41,9 +53,14 @@
       (/* on accept */) => {
         map.removeAllMapMarkers();
         hasMarkers.value = false;
+        showMarkersList.value = false;
         alertify.log('All markers were removed');
       }
     );
+  }
+
+  function toggleMarkersList() {
+    showMarkersList.value = !showMarkersList.value;
   }
 
   onMounted(async () => {
@@ -71,6 +88,9 @@
   border: solid 2px #000;
   background: #CCC;
 }
+#map.side-bar-open {
+  right: 275px;
+}
 #map-controls {
   position: absolute;
   left: 0;
@@ -85,5 +105,19 @@
 #map-controls button {
   margin: 0;
   min-width: 220px;
+}
+#map-controls button.align-right {
+  margin-left: auto;
+}
+#existing-map-markers {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  bottom: 0;
+  width: 275px;
+  background: #FFF;
+  border: solid 2px #000;
+  border-left: none;
+  overflow-y: auto;
 }
 </style>

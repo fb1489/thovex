@@ -77,12 +77,23 @@ export default class Map {
             });
     }
 
+    getMarkers(): Array<google.maps.marker.AdvancedMarkerElement> {
+        return this.mapMarkers;
+    }
+    
+    goTo(mapMarker: google.maps.marker.AdvancedMarkerElement): void {
+        this.map.panTo(new google.maps.LatLng(
+            mapMarker.position!.lat as number,
+            mapMarker.position!.lng as number
+        ));
+    }
+
     private addMarkerOn = (latLng: google.maps.LatLng): google.maps.marker.AdvancedMarkerElement => {
         let marker = new google.maps.marker.AdvancedMarkerElement({
             map: this.map,
             position: latLng,
         });
-        
+
         this.mapMarkers.push(marker);
 
         for (let listener of this.mapMarkerListeners) {
